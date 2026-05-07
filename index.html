@@ -37,13 +37,14 @@ body::before{
   content:'';
   position:fixed;inset:0;
   background-image:
-    linear-gradient(rgba(232,100,10,.08) 1px, transparent 1px),
-    linear-gradient(90deg,rgba(232,100,10,.08) 1px, transparent 1px),
-    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
-    radial-gradient(circle at 20% 20%,rgba(232,100,10,.06),transparent 8%),
-    radial-gradient(circle at 75% 15%,rgba(255,255,255,.06),transparent 10%);
-  background-size:100px 100px,100px 100px,50px 50px,100% 100%,100% 100%;
-  opacity:.2;
+    url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:rgba(232,100,10,.12);stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:rgba(232,100,10,.04);stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='79' height='79' fill='none' stroke='url(%23g1)' stroke-width='1'/%3E%3Cline x1='40' y1='0' x2='40' y2='79' stroke='rgba(232,100,10,.06)' stroke-width='0.5'/%3E%3Cline x1='0' y1='40' x2='79' y2='40' stroke='rgba(232,100,10,.06)' stroke-width='0.5'/%3E%3Ccircle cx='40' cy='40' r='2' fill='rgba(232,100,10,.08)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='119' height='119' fill='none' stroke='rgba(255,255,255,.06)' stroke-width='0.5'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 15% 18%, rgba(232,100,10,.12), transparent 16%),
+    radial-gradient(circle at 80% 10%, rgba(255,255,255,.08), transparent 16%),
+    linear-gradient(180deg, rgba(242,237,230,1), rgba(228,210,179,1));
+  background-size:80px 80px,120px 120px,100% 100%,100% 100%,100% 100%;
+  background-position:0 0,40px 40px,0 0,0 0,0 0;
+  opacity:.3;
   pointer-events:none;
   z-index:9997;
 }
@@ -69,15 +70,24 @@ body.click #cur-r{width:58px;height:58px;opacity:.45;}
 }
 .particle{
   position:absolute;border-radius:50%;
-  background:rgba(255,255,255,.8);
-  opacity:0;
+  background:var(--amber);
+  opacity:.6;
   pointer-events:none;
   will-change:transform,opacity;
-  animation:particle-float linear infinite;
+}
+.particle.fast{
+  animation:particle-burst 0.8s ease-out forwards;
+}
+.particle.normal{
+  animation:particle-float 1.6s ease-out forwards;
 }
 @keyframes particle-float{
-  0%{transform:translateY(0) scale(0.8);opacity:.18;}
-  100%{transform:translateY(-120px) scale(1.2);opacity:0;}
+  0%{transform:translate(0,0) scale(1);opacity:.6;}
+  100%{transform:translate(var(--px),var(--py)) scale(0.3);opacity:0;}
+}
+@keyframes particle-burst{
+  0%{transform:translate(0,0) scale(1);opacity:.8;}
+  100%{transform:translate(var(--px),var(--py)) scale(0.2);opacity:0;}
 }
 
 /* ── LOADER ── */
@@ -974,27 +984,58 @@ footer{
   });
   document.addEventListener('mousedown',()=>document.body.classList.add('click'));
   document.addEventListener('mouseup',()=>document.body.classList.remove('click'));
-  document.addEventListener('mouseleave',()=>document.body.classList.remove('click'));
 })();
 
-/* BACKGROUND PARTICLES */
+/* MOUSE PARTICLES */
 (function(){
   const layer=document.getElementById('particle-layer');
   if(!layer)return;
-  const count=40;
-  for(let i=0;i<count;i++){
+  let isClicking=false;
+  let lastParticleTime=0;
+  const particleDelay=40;
+  const clickParticleDelay=15;
+  
+  function createParticle(x,y,isFast){
     const p=document.createElement('div');
-    p.className='particle';
-    const size=Math.random()*4+2;
+    p.className=`particle ${isFast?'fast':'normal'}`;
+    const size=Math.random()*6+3;
     p.style.width=`${size}px`;
     p.style.height=`${size}px`;
-    p.style.left=`${Math.random()*100}%`;
-    p.style.top=`${Math.random()*100}%`;
-    p.style.animationDuration=`${4 + Math.random()*4}s`;
-    p.style.animationDelay=`${Math.random()*6}s`;
-    p.style.opacity=`${0.12 + Math.random()*0.2}`;
+    p.style.left=`${x}px`;
+    p.style.top=`${y}px`;
+    p.style.transform='translate(-50%,-50%)';
+    
+    const angle=Math.random()*Math.PI*2;
+    const velocity=isFast?180+Math.random()*60:100+Math.random()*40;
+    const px=Math.cos(angle)*velocity;
+    const py=Math.sin(angle)*velocity-60;
+    
+    p.style.setProperty('--px',`${px}px`);
+    p.style.setProperty('--py',`${py}px`);
+    
     layer.appendChild(p);
+    setTimeout(()=>p.remove(),isFast?800:1600);
   }
+  
+  document.addEventListener('mousemove',e=>{
+    const now=Date.now();
+    if(now-lastParticleTime>particleDelay){
+      createParticle(e.clientX,e.clientY,isClicking);
+      lastParticleTime=now;
+    }
+  });
+  
+  document.addEventListener('mousedown',()=>{
+    isClicking=true;
+  });
+  
+  document.addEventListener('mouseup',()=>{
+    isClicking=false;
+  });
+  
+  document.addEventListener('mouseleave',()=>{
+    isClicking=false;
+  });
 })();
 
 /* NAV SCROLL */
