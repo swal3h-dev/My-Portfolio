@@ -23,11 +23,29 @@
 }
 html{scroll-behavior:smooth;overflow-x:hidden;}
 body{
-  background:var(--paper);
+  background:
+    radial-gradient(circle at 15% 18%, rgba(232,100,10,.12), transparent 16%),
+    radial-gradient(circle at 80% 10%, rgba(255,255,255,.08), transparent 16%),
+    linear-gradient(180deg, rgba(242,237,230,1), rgba(228,210,179,1));
   color:var(--ink);
   font-family:var(--f-body);
   cursor:none;
+  min-height:100vh;
   overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(232,100,10,.08) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(232,100,10,.08) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+    radial-gradient(circle at 20% 20%,rgba(232,100,10,.06),transparent 8%),
+    radial-gradient(circle at 75% 15%,rgba(255,255,255,.06),transparent 10%);
+  background-size:100px 100px,100px 100px,50px 50px,100% 100%,100% 100%;
+  opacity:.2;
+  pointer-events:none;
+  z-index:9997;
 }
 /* grain overlay */
 body::after{
@@ -43,6 +61,24 @@ body::after{
 #cur-r{width:28px;height:28px;border:1.5px solid var(--amber);border-radius:50%;position:absolute;transform:translate(-50%,-50%);transition:width .3s,height .3s,opacity .2s;}
 body.h #cur-d{width:10px;height:10px;background:var(--ink);}
 body.h #cur-r{width:48px;height:48px;border-color:var(--ink);}
+body.click #cur-r{width:58px;height:58px;opacity:.45;}
+
+#particle-layer{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  overflow:hidden;
+}
+.particle{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.8);
+  opacity:0;
+  pointer-events:none;
+  will-change:transform,opacity;
+  animation:particle-float linear infinite;
+}
+@keyframes particle-float{
+  0%{transform:translateY(0) scale(0.8);opacity:.18;}
+  100%{transform:translateY(-120px) scale(1.2);opacity:0;}
+}
 
 /* ── LOADER ── */
 #loader{
@@ -121,7 +157,10 @@ nav.s{
   grid-column:2;grid-row:1;
   position:relative;
   overflow:hidden;
-  background:var(--ink);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(232,100,10,.18), transparent 18%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,.08), transparent 18%),
+    var(--ink);
 }
 .hero-img{
   width:100%;height:100%;
@@ -557,6 +596,7 @@ footer{
 <body>
 
 <div id="cur"><div id="cur-d"></div><div id="cur-r"></div></div>
+<div id="particle-layer" aria-hidden="true"></div>
 
 <!-- LOADER -->
 <div id="loader">
@@ -932,6 +972,29 @@ footer{
     el.addEventListener('mouseenter',()=>document.body.classList.add('h'));
     el.addEventListener('mouseleave',()=>document.body.classList.remove('h'));
   });
+  document.addEventListener('mousedown',()=>document.body.classList.add('click'));
+  document.addEventListener('mouseup',()=>document.body.classList.remove('click'));
+  document.addEventListener('mouseleave',()=>document.body.classList.remove('click'));
+})();
+
+/* BACKGROUND PARTICLES */
+(function(){
+  const layer=document.getElementById('particle-layer');
+  if(!layer)return;
+  const count=40;
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const size=Math.random()*4+2;
+    p.style.width=`${size}px`;
+    p.style.height=`${size}px`;
+    p.style.left=`${Math.random()*100}%`;
+    p.style.top=`${Math.random()*100}%`;
+    p.style.animationDuration=`${4 + Math.random()*4}s`;
+    p.style.animationDelay=`${Math.random()*6}s`;
+    p.style.opacity=`${0.12 + Math.random()*0.2}`;
+    layer.appendChild(p);
+  }
 })();
 
 /* NAV SCROLL */
