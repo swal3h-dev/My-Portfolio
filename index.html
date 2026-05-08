@@ -929,23 +929,23 @@ footer{
       </div>
     </div>
     <div class="c-r rv d2">
-      <form class="form" onsubmit="return false;">
+      <form id="contact-form" class="form">
         <div class="fg">
-          <label>Your Name</label>
-          <input class="fi" type="text" placeholder="Jane Smith">
+          <label for="contact-name">Your Name</label>
+          <input id="contact-name" class="fi" type="text" name="name" placeholder="Jane Smith" required>
           <div class="fg-line"></div>
         </div>
         <div class="fg">
-          <label>Email Address</label>
-          <input class="fi" type="email" placeholder="jane@company.com">
+          <label for="contact-email">Email Address</label>
+          <input id="contact-email" class="fi" type="email" name="email" placeholder="jane@company.com" required>
           <div class="fg-line"></div>
         </div>
         <div class="fg">
-          <label>Message</label>
-          <textarea class="fi" rows="5" placeholder="What's on your mind..."></textarea>
+          <label for="contact-message">Message</label>
+          <textarea id="contact-message" class="fi" name="message" rows="5" placeholder="What's on your mind..." required></textarea>
           <div class="fg-line"></div>
         </div>
-        <button class="btn-submit"><span>Send Message →</span></button>
+        <button type="submit" class="btn-submit"><span>Send Message →</span></button>
       </form>
     </div>
   </div>
@@ -1097,6 +1097,36 @@ document.querySelectorAll('.fi').forEach(fi=>{
     }
   });
 });
+
+/* CONTACT FORM */
+(function(){
+  const form=document.getElementById('contact-form');
+  if(!form)return;
+
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+
+    const name=document.getElementById('contact-name').value.trim();
+    const email=document.getElementById('contact-email').value.trim();
+    const message=document.getElementById('contact-message').value.trim();
+
+    if(!name||!email||!message){
+      alert('Please fill in your name, email, and message before sending.');
+      return;
+    }
+
+    const subject=`Portfolio message from ${name}`;
+    const body=[
+      `Name: ${name}`,
+      `Email: ${email}`,
+      '',
+      message
+    ].join('\n');
+
+    const mailto=`mailto:swalehahmed0015@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href=mailto;
+  });
+})();
 </script>
 </body>
 </html>
